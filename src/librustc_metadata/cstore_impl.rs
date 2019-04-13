@@ -20,6 +20,7 @@ use rustc::hir::map::definitions::DefPathTable;
 use rustc::util::nodemap::DefIdMap;
 use rustc_data_structures::svh::Svh;
 
+use smallvec::SmallVec;
 use std::any::Any;
 use rustc_data_structures::sync::Lrc;
 use std::sync::Arc;
@@ -105,12 +106,12 @@ provide! { <'tcx> tcx, def_id, other, cdata,
         let _ = cdata;
         tcx.calculate_dtor(def_id, &mut |_,_| Ok(()))
     }
-    variances_of => { Lrc::new(cdata.get_item_variances(def_id.index)) }
+    variances_of => { tcx.arena.alloc_from_iter(cdata.get_item_variances(def_id.index)) }
     associated_item_def_ids => {
-        let mut result = vec![];
+        let mut result = SmallVec::<[_; 8]>::new();
         cdata.each_child_of_item(def_id.index,
           |child| result.push(child.def.def_id()), tcx.sess);
-        Lrc::new(result)
+        tcx.arena.alloc_from_iter(result)
     }
     associated_item => { cdata.get_associated_item(def_id.index) }
     impl_trait_ref => { cdata.get_impl_trait(def_id.index, tcx) }
@@ -133,7 +134,7 @@ provide! { <'tcx> tcx, def_id, other, cdata,
         (cdata.mir_const_qualif(def_id.index), Lrc::new(BitSet::new_empty(0)))
     }
     fn_sig => { cdata.fn_sig(def_id.index, tcx) }
-    inherent_impls => { Lrc::new(cdata.get_inherent_implementations_for_type(def_id.index)) }
+    inherent_impls => { cdata.get_inherent_implementations_for_type(tcx, def_id.index) }
     is_const_fn_raw => { cdata.is_const_fn_raw(def_id.index) }
     is_foreign_item => { cdata.is_foreign_item(def_id.index) }
     describe_def => { cdata.get_def(def_id.index) }

@@ -174,7 +174,7 @@ rustc_queries! {
 
         /// Returns the inferred outlives predicates (e.g., for `struct
         /// Foo<'a, T> { x: &'a T }`, this would return `T: 'a`).
-        query inferred_outlives_of(_: DefId) -> Lrc<Vec<ty::Predicate<'tcx>>> {}
+        query inferred_outlives_of(_: DefId) -> &'tcx [ty::Predicate<'tcx>] {}
 
         /// Maps from the `DefId` of a trait to the list of
         /// super-predicates. This is a subset of the full list of
@@ -240,13 +240,13 @@ rustc_queries! {
 
         /// Get a map with the variance of every item; use `item_variance`
         /// instead.
-        query crate_variances(_: CrateNum) -> Lrc<ty::CrateVariancesMap> {
+        query crate_variances(_: CrateNum) -> Lrc<ty::CrateVariancesMap<'tcx>> {
             desc { "computing the variances for items in this crate" }
         }
 
         /// Maps from def-id of a type or region parameter to its
         /// (inferred) variance.
-        query variances_of(_: DefId) -> Lrc<Vec<ty::Variance>> {}
+        query variances_of(_: DefId) -> &'tcx [ty::Variance] {}
     }
 
     TypeChecking {
@@ -259,7 +259,7 @@ rustc_queries! {
 
     Other {
         /// Maps from an impl/trait def-id to a list of the def-ids of its items
-        query associated_item_def_ids(_: DefId) -> Lrc<Vec<DefId>> {}
+        query associated_item_def_ids(_: DefId) -> &'tcx [DefId] {}
 
         /// Maps from a trait item to the trait item "descriptor"
         query associated_item(_: DefId) -> ty::AssociatedItem {}
@@ -274,7 +274,7 @@ rustc_queries! {
         /// Maps a DefId of a type to a list of its inherent impls.
         /// Contains implementations of methods that are inherent to a type.
         /// Methods in these implementations don't need to be exported.
-        query inherent_impls(_: DefId) -> Lrc<Vec<DefId>> {
+        query inherent_impls(_: DefId) -> &'tcx [DefId] {
             eval_always
         }
     }
@@ -380,7 +380,7 @@ rustc_queries! {
         /// Not meant to be used directly outside of coherence.
         /// (Defined only for `LOCAL_CRATE`.)
         query crate_inherent_impls(k: CrateNum)
-            -> Lrc<CrateInherentImpls> {
+            -> &'tcx CrateInherentImpls {
             eval_always
             desc { "all inherent impls defined in crate `{:?}`", k }
         }
